@@ -9,6 +9,8 @@ The project is implemented using pyglet. My goal in creating this was to build a
 
 There are still some parts need to refine(such as display score in a more pretty way, make the collision dectetion more precisely), but the game is mostly complete. You can clone it and have a try. Hope you have a fun. :)
 
+![screenshot](http://willz.net/wp-content/uploads/2014/02/optimized.gif)
+
 
 How to Play
 -----------
