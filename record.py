@@ -39,4 +39,22 @@ class Record:
             seq.append(s)
         batch.draw()
 
+    @staticmethod
+    def get_num_image(num, imgs):
+        if num == 0:
+            return imgs[0]
+        seq = []
+        width = 0
+        while num:
+            r = num % 10
+            seq.insert(0, imgs[r])
+            width += imgs[r].width
+            num /= 10
+        ret_img = pyglet.image.Texture.create(width, imgs[0].height)
+        w = 0
+        for img in seq:
+            ret_img.blit_into(img, w, 0, 0)
+            w += img.width
+        return ret_img
+
         

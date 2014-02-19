@@ -26,7 +26,7 @@ class Bird(pyglet.sprite.Sprite):
         if self.speed > 0:
             self.speed = 0
         self.speed -= 50
-        self.y += 20
+        self.y += 25
         self.ang_speed = 0
         self.rotation = -30
         resource.tap_sound.play()

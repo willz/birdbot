@@ -14,10 +14,9 @@ class Game:
         self.PIPE_WIDTH = resource.pipe_up.width
         self.PIPE_HEIGHT = resource.pipe_up.height
         self.PIPE_WIDTH_INTERVAL = 150
-        self.PIPE_HEIGHT_INTERVAL = self.PIPE_HEIGHT + 80
+        self.PIPE_HEIGHT_INTERVAL = 80
+        self.PIPE_HEIGHT_OFFSET = self.PIPE_HEIGHT + self.PIPE_HEIGHT_INTERVAL
         self.LAND_HEIGHT = resource.land.height
-
-        self.state = 'INIT'
         
         self.record = Record()
 
@@ -42,12 +41,17 @@ class Game:
         y = self.__gen_pipe_pos_y()
         p = Pipe(resource.pipe_up, 500, y)
         self.pipes.append(p)
-        p = Pipe(resource.pipe_down, 500, y + self.PIPE_HEIGHT_INTERVAL)
+        p = Pipe(resource.pipe_down, 500, y + self.PIPE_HEIGHT_OFFSET)
         self.pipes.append(p)
+
+        self.state = 'INIT'
         self.record.reset()
 
-    def reset(self):
+    def restart(self):
         self.__setup()
+
+    def play(self):
+        self.state = 'PLAY'
 
     def draw(self):
         if self.state == 'INIT':
@@ -68,7 +72,9 @@ class Game:
             self.land.draw()
             self.bird.draw()
             # show current score
-            Record.draw_num(self.record.get(), resource.big_nums, 130, 400)
+            img = Record.get_num_image(self.record.get(), resource.big_nums)
+            score = pyglet.sprite.Sprite(img, (self.WINDOW_WIDTH - img.width) / 2, 400)
+            score.draw()
         elif self.state == 'FAILED':
             self.__draw_pipes()
             self.land.draw()
@@ -76,9 +82,15 @@ class Game:
             self.game_over.draw()
             # show score panel
             self.score_panel.draw()
-            # show score
-            Record.draw_num(self.record.get(), resource.small_nums, 210, 290)
-            Record.draw_num(self.record.best_score, resource.small_nums, 210, 250)
+            # show score (right align)
+            img = Record.get_num_image(self.record.get(), resource.small_nums)
+            x = 240 - img.width
+            score = pyglet.sprite.Sprite(img, x, 290)
+            score.draw()
+            img = Record.get_num_image(self.record.best_score, resource.small_nums)
+            x = 240 - img.width
+            score = pyglet.sprite.Sprite(img, x, 250)
+            score.draw()
             # show buttons
             self.button_play.draw()
             self.button_score.draw()
@@ -102,7 +114,7 @@ class Game:
             y = self.__gen_pipe_pos_y()
             pipe = Pipe(resource.pipe_up, x, y)
             self.pipes.append(pipe)
-            pipe = Pipe(resource.pipe_down, x, y + self.PIPE_HEIGHT_INTERVAL)
+            pipe = Pipe(resource.pipe_down, x, y + self.PIPE_HEIGHT_OFFSET)
             self.pipes.append(pipe)
 
     def update(self, dt):
@@ -114,7 +126,6 @@ class Game:
                 resource.hit_sound.play()
                 self.state = 'FAILING'
                 self.record.save()
-                print 'FAIL!!!!!', self.bird.y, self.bird.height / 2
             else:
                 self.bird.update(dt)
                 # update pipes
@@ -123,7 +134,9 @@ class Game:
                 self.land.x = 0 if self.land.x else -10
             self.__calc_score()
         elif self.state == 'FAILING':
-            if self.bird.y > self.LAND_HEIGHT + 24:
+            # the bird is dead, but still need to play the animation
+            # that the bird sliding to land
+            if self.bird.y > self.LAND_HEIGHT + 15:
                 self.bird.update(dt)
             elif self.bird.rotation != 90:
                 self.bird.rotate(dt)
@@ -149,11 +162,11 @@ class Game:
         for i in range(1, 2, len(self.pipes)):
             p = self.pipes[i]
             if (self.bird.y + 10 >= p.y or \
-                self.bird.y <= p.y - 80 + 10) and \
-                self.bird.x - HALF_BIRD_SIZE <= p.x + self.PIPE_WIDTH and \
-                self.bird.x + HALF_BIRD_SIZE >= p.x:
+                self.bird.y <= p.y - self.PIPE_HEIGHT_INTERVAL + 20) and \
+                self.bird.x <= p.x + self.PIPE_WIDTH and \
+                self.bird.x + 15 >= p.x:
                 return True
         return False
 
     def __gen_pipe_pos_y(self):
-        return random.randint(-200, 100)
+        return random.randint(-170, 70)

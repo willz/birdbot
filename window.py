@@ -18,13 +18,12 @@ def on_draw():
 @window.event
 def on_mouse_press(x, y, button, modifiers):
     if button == mouse.LEFT:
-        print x, y
+        pass
     if game.state == 'INIT' or game.state == 'FAILED':
         if 30 < x and x < 130 and 150 < y and y < 205:
-            game.reset()
+            game.restart()
             game.state = 'READY'
     elif game.state == 'READY':
-        game.state = 'PLAY'
+        game.play()
     elif game.state == 'PLAY':
         game.bird.jump()
-    print game.bird.y

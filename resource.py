@@ -22,8 +22,10 @@ bird_seq = [center_image_anchor(img) for img in [bird0_0, bird0_1, bird0_2]]
 bird_gif = pyglet.image.Animation.from_image_sequence(bird_seq, 0.2)
 
 # group the big digit picture to a list
-big_nums = [vars()['font_0' + str(48 + i)] for i in range(10)]
-small_nums = [vars()['number_score_0' + str(i)] for i in range(10)]
+# NOTE the digit picture in the list should be the ImageData type instead of
+#      TextureRegion, for TextureRegion CANNOT blit into a larger image
+big_nums = [vars()['font_0' + str(48 + i)].get_image_data() for i in range(10)]
+small_nums = [vars()['number_score_0' + str(i)].get_image_data() for i in range(10)]
 
 # sound file
 tap_sound = pyglet.resource.media('sfx_wing.wav', streaming = False)
