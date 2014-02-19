@@ -1,6 +1,8 @@
 import pyglet
+import os
 
-pyglet.resource.path = ['./res']
+dir = os.path.split(os.path.realpath(__file__))[0]
+pyglet.resource.path = [os.path.join(dir, 'res')]
 pyglet.resource.reindex()
 
 atlas_file = pyglet.resource.file('atlas.txt', 'rb')

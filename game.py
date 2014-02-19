@@ -144,7 +144,7 @@ class Game:
                 self.state = 'FAILED'
 
     def __calc_score(self):
-        for i in range(1, 2, len(self.pipes)):
+        for i in range(1, len(self.pipes), 2):
             p = self.pipes[i]
             if (not p.scored) and self.bird.x > p.x:
                 self.record.inc()
@@ -159,7 +159,7 @@ class Game:
         if self.bird.y < self.LAND_HEIGHT + HALF_BIRD_SIZE:
             return True
         # hit the pipe
-        for i in range(1, 2, len(self.pipes)):
+        for i in range(1, len(self.pipes), 2):
             p = self.pipes[i]
             if (self.bird.y + 10 >= p.y or \
                 self.bird.y <= p.y - self.PIPE_HEIGHT_INTERVAL + 20) and \
