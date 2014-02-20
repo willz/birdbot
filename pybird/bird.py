@@ -19,13 +19,13 @@ class Bird(pyglet.sprite.Sprite):
         if self.jumped:
             self.speed = -200
             self.ang_speed = -400
+            if Game.sound:
+                resource.tap_sound.play()
         self.y -= self.speed * dt
         self.rotation += self.ang_speed * Game.TIME_INTERVAL
         if self.y > Game.WINDOW_HEIGHT:
             self.y = Game.WINDOW_HEIGHT
             self.speed = 0
-            if Game.sound:
-                resource.tap_sound.play()
         if self.rotation < -20:
             self.rotation = -20
             self.ang_speed = 0
