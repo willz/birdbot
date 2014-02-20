@@ -107,24 +107,22 @@ class Game:
             self.button_score.draw()
 
     def __draw_pipes(self):
-        i = 0
-        while i < len(self.pipes):
+        for i in range(0, len(self.pipes), 2):
             pipe = self.pipes[i]
-            if pipe.x + pipe.width < 0:
-                # this pipe has move out of the window, delete it
-                self.pipes.pop(0)
-                self.pipes.pop(0)
-                continue
-            elif pipe.x <= Game.WINDOW_WIDTH:
+            if pipe.x + pipe.width > 0 and pipe.x <= Game.WINDOW_WIDTH:
                 self.pipes[i].draw()
                 self.pipes[i + 1].draw()
-            i += 2
 
     def update(self, dt):
         # set the delta to constant, otherwise the game might be unstable due
         # to high CPU load etc.
         dt = Game.TIME_INTERVAL
 
+        # delete the pipe move out of window
+        pipe = self.pipes[0]
+        if pipe.x + pipe.width < 0:
+            self.pipes.pop(0)
+            self.pipes.pop(0)
         # always keep 3 pair of pipes
         if len(self.pipes) < 6:
             x = self.pipes[-1].x + Game.PIPE_WIDTH_INTERVAL
@@ -185,4 +183,4 @@ class Game:
         return False
 
     def __gen_pipe_pos_y(self):
-        return random.randint(-170, 70)
+        return random.randint(-120, 30)
