@@ -17,10 +17,13 @@ class Game:
         self.PIPE_HEIGHT_INTERVAL = 80
         self.PIPE_HEIGHT_OFFSET = self.PIPE_HEIGHT + self.PIPE_HEIGHT_INTERVAL
         self.LAND_HEIGHT = resource.land.height
+
+        self.TIME_INTERVAL = 0.05
         
         self.record = Record()
 
         # sprites
+        self.background = pyglet.sprite.Sprite(resource.bg_day, 0, 0)
         self.logo = pyglet.sprite.Sprite(resource.title, 60, 320)
         self.button_play = pyglet.sprite.Sprite(resource.button_play, 20, 140)
         self.button_score = pyglet.sprite.Sprite(resource.button_score, 150, 140)
@@ -51,9 +54,12 @@ class Game:
         self.__setup()
 
     def play(self):
+        self.bird.x = 100
         self.state = 'PLAY'
 
     def draw(self):
+        # draw background
+        self.background.draw()
         if self.state == 'INIT':
             # add logo
             self.logo.draw()
@@ -108,6 +114,13 @@ class Game:
                 self.pipes[i].draw()
                 self.pipes[i + 1].draw()
             i += 2
+
+    def update(self, dt):
+        # set the delta to constant, otherwise the game might be unstable due
+        # to high CPU load etc.
+        print 'bird', self.bird.y
+        dt = self.TIME_INTERVAL
+
         # always keep 3 pair of pipes
         if len(self.pipes) < 6:
             x = self.pipes[-1].x + self.PIPE_WIDTH_INTERVAL
@@ -117,7 +130,6 @@ class Game:
             pipe = Pipe(resource.pipe_down, x, y + self.PIPE_HEIGHT_OFFSET)
             self.pipes.append(pipe)
 
-    def update(self, dt):
         if self.state == 'INIT' or self.state == 'READY':
             # move the land
             self.land.x = 0 if self.land.x else -10
