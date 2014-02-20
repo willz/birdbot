@@ -2,6 +2,7 @@ import pyglet
 import random
 import pickle
 import atexit
+import os
 from pybird.game import Game
 
 class Bot:
@@ -25,7 +26,8 @@ class Bot:
         self.pre_s = (9999, 9999)
         self.pre_a = 'do_nothing'
 
-        self.Q = pickle.load(open('dict_Q'))
+        if os.path.isfile('dict_Q'):
+            self.Q = pickle.load(open('dict_Q'))
 
         def save_Q():
             pickle.dump(self.Q, open('dict_Q', 'wb'))
