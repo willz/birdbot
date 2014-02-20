@@ -5,10 +5,10 @@ from game import *
 
 game = Game()
 
-pyglet.clock.schedule_interval(game.update, game.TIME_INTERVAL)
+pyglet.clock.schedule_interval(game.update, Game.TIME_INTERVAL)
 
 # create window
-window = pyglet.window.Window(game.WINDOW_WIDTH, game.WINDOW_HEIGHT,  vsync = False)
+window = pyglet.window.Window(Game.WINDOW_WIDTH, Game.WINDOW_HEIGHT, vsync = False)
 
 @window.event
 def on_draw():

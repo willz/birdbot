@@ -1,25 +1,26 @@
 import random
 import math
 import pyglet
-from bird import *
+import bird
 from pipe import *
 from record import *
 import resource
 
 class Game:
-    def __init__(self):
-        # constants
-        self.WINDOW_WIDTH = resource.bg_day.width
-        self.WINDOW_HEIGHT = resource.bg_day.height
-        self.PIPE_WIDTH = resource.pipe_up.width
-        self.PIPE_HEIGHT = resource.pipe_up.height
-        self.PIPE_WIDTH_INTERVAL = 150
-        self.PIPE_HEIGHT_INTERVAL = 80
-        self.PIPE_HEIGHT_OFFSET = self.PIPE_HEIGHT + self.PIPE_HEIGHT_INTERVAL
-        self.LAND_HEIGHT = resource.land.height
+    # constants
+    WINDOW_WIDTH = resource.bg_day.width
+    WINDOW_HEIGHT = resource.bg_day.height
+    PIPE_WIDTH = resource.pipe_up.width
+    PIPE_HEIGHT = resource.pipe_up.height
+    PIPE_WIDTH_INTERVAL = 160
+    PIPE_HEIGHT_INTERVAL = 100
+    PIPE_HEIGHT_OFFSET = PIPE_HEIGHT + PIPE_HEIGHT_INTERVAL
+    LAND_HEIGHT = resource.land.height
+    TIME_INTERVAL = 0.05
 
-        self.TIME_INTERVAL = 0.05
-        
+    sound = True
+
+    def __init__(self):
         self.record = Record()
 
         # sprites
@@ -34,21 +35,25 @@ class Game:
 
         # create land
         self.land = pyglet.sprite.Sprite(resource.land, 0, 0)
+        
         self.__setup()
 
     def __setup(self):
         # create a bird
-        self.bird = Bird(resource.bird_gif, 140, 270)
+        self.bird = bird.Bird(resource.bird_gif, 140, 270)
         # create pipes
         self.pipes = []
         y = self.__gen_pipe_pos_y()
         p = Pipe(resource.pipe_up, 500, y)
         self.pipes.append(p)
-        p = Pipe(resource.pipe_down, 500, y + self.PIPE_HEIGHT_OFFSET)
+        p = Pipe(resource.pipe_down, 500, y + Game.PIPE_HEIGHT_OFFSET)
         self.pipes.append(p)
 
         self.state = 'INIT'
         self.record.reset()
+
+    def set_sound(self, flag):
+        Game.sound = flag
 
     def restart(self):
         self.__setup()
@@ -79,7 +84,7 @@ class Game:
             self.bird.draw()
             # show current score
             img = Record.get_num_image(self.record.get(), resource.big_nums)
-            score = pyglet.sprite.Sprite(img, (self.WINDOW_WIDTH - img.width) / 2, 400)
+            score = pyglet.sprite.Sprite(img, (Game.WINDOW_WIDTH - img.width) / 2, 400)
             score.draw()
         elif self.state == 'FAILED':
             self.__draw_pipes()
@@ -110,7 +115,7 @@ class Game:
                 self.pipes.pop(0)
                 self.pipes.pop(0)
                 continue
-            elif pipe.x <= self.WINDOW_WIDTH:
+            elif pipe.x <= Game.WINDOW_WIDTH:
                 self.pipes[i].draw()
                 self.pipes[i + 1].draw()
             i += 2
@@ -118,40 +123,37 @@ class Game:
     def update(self, dt):
         # set the delta to constant, otherwise the game might be unstable due
         # to high CPU load etc.
-        print 'bird', self.bird.y
-        dt = self.TIME_INTERVAL
+        dt = Game.TIME_INTERVAL
 
         # always keep 3 pair of pipes
         if len(self.pipes) < 6:
-            x = self.pipes[-1].x + self.PIPE_WIDTH_INTERVAL
+            x = self.pipes[-1].x + Game.PIPE_WIDTH_INTERVAL
             y = self.__gen_pipe_pos_y()
             pipe = Pipe(resource.pipe_up, x, y)
             self.pipes.append(pipe)
-            pipe = Pipe(resource.pipe_down, x, y + self.PIPE_HEIGHT_OFFSET)
+            pipe = Pipe(resource.pipe_down, x, y + Game.PIPE_HEIGHT_OFFSET)
             self.pipes.append(pipe)
 
         if self.state == 'INIT' or self.state == 'READY':
             # move the land
             self.land.x = 0 if self.land.x else -10
         elif self.state == 'PLAY':
+            self.bird.update(dt)
+            # update pipes
+            [pipe.update(dt) for pipe in self.pipes]
+            # move the land
+            self.land.x = 0 if self.land.x else -10
             if self.__is_collide():
-                resource.hit_sound.play()
+                if Game.sound:
+                    resource.hit_sound.play()
                 self.state = 'FAILING'
                 self.record.save()
-            else:
-                self.bird.update(dt)
-                # update pipes
-                [pipe.update(dt) for pipe in self.pipes]
-                # move the land
-                self.land.x = 0 if self.land.x else -10
             self.__calc_score()
         elif self.state == 'FAILING':
             # the bird is dead, but still need to play the animation
             # that the bird sliding to land
-            if self.bird.y > self.LAND_HEIGHT + 15:
+            if self.bird.y > Game.LAND_HEIGHT + 15:
                 self.bird.update(dt)
-            elif self.bird.rotation != 90:
-                self.bird.rotate(dt)
             else:
                 self.state = 'FAILED'
 
@@ -161,22 +163,24 @@ class Game:
             if (not p.scored) and self.bird.x > p.x:
                 self.record.inc()
                 p.scored = True
-                resource.point_sound.play()
+                if Game.sound:
+                    resource.point_sound.play()
                 return
 
 
     def __is_collide(self):
         HALF_BIRD_SIZE = self.bird.height / 2
         # hit the land
-        if self.bird.y < self.LAND_HEIGHT + HALF_BIRD_SIZE:
+        if self.bird.y < Game.LAND_HEIGHT + 15:
+            self.bird.y = Game.LAND_HEIGHT + 15
             return True
         # hit the pipe
         for i in range(1, len(self.pipes), 2):
             p = self.pipes[i]
-            if (self.bird.y + 10 >= p.y or \
-                self.bird.y <= p.y - self.PIPE_HEIGHT_INTERVAL + 20) and \
-                self.bird.x <= p.x + self.PIPE_WIDTH and \
-                self.bird.x + 15 >= p.x:
+            if self.bird.x <= p.x + Game.PIPE_WIDTH + 15 and \
+                self.bird.x + 15 >= p.x and \
+                (self.bird.y + 10 >= p.y or \
+                self.bird.y <= p.y - Game.PIPE_HEIGHT_INTERVAL + 15):
                 return True
         return False
 
