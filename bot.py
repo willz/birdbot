@@ -17,7 +17,7 @@ class Bot:
         # variables for plan
         # NOTE put the instance variable you need here
 
-    # this method is auto called every 0.1s by the pyglet
+    # this method is auto called every 0.05s by the pyglet
     def run(self, dt):
         if game.state == 'PLAY':
             self.tapped = False
@@ -70,6 +70,6 @@ class Bot:
 
 if __name__ == '__main__':
     bot = Bot()
-    pyglet.clock.schedule_interval(bot.run, 0.1)
+    pyglet.clock.schedule_interval(bot.run, 0.05)
     pyglet.app.run()
     

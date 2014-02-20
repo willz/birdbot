@@ -1,6 +1,8 @@
 import pyglet
 from pybird.window import *
 import random
+import pickle
+import atexit
 
 class Bot:
     def __init__(self):
@@ -14,6 +16,7 @@ class Bot:
         # pause planning until the game is finished completely
         self.pause = False
         game.play()
+        self.count = 0
 
         # variables for plan
         self.Q = {}
@@ -22,8 +25,17 @@ class Bot:
         self.pre_s = (9999, 9999)
         self.pre_a = 'do_nothing'
 
-    # this method is auto called every 0.1s by the pyglet
+        self.Q = pickle.load(open('dict_Q'))
+
+        def save_Q():
+            pickle.dump(self.Q, open('dict_Q', 'wb'))
+
+        atexit.register(save_Q)
+
+    # this method is auto called every 0.05s by the pyglet
     def run(self, dt):
+        if self.count < 10:
+            print 'dt', dt
         if game.state == 'PLAY':
             self.tapped = False
             # call plan() to execute your plan
@@ -39,6 +51,8 @@ class Bot:
             self.pause = True
         if game.state == 'FAILED':
             # restart game
+            print '### RESTART ###'
+            self.count = 0
             game.restart()
             game.play()
             self.pause = False
@@ -72,9 +86,14 @@ class Bot:
     def plan(self, state):
         bird_x = state['bird'][0]
         bird_y = state['bird'][1]
+        if self.count < 10:
+            print bird_y
         if len(state['pipes']) == 0:
             # no pipes seen, we can use a simple rule to keep bird
             # fly forward
+            if self.count < 10:
+                print '0 pipe', bird_y < self.WINDOW_HEIGHT / 2
+                self.count += 1
             if bird_y < self.WINDOW_HEIGHT / 2:
                 self.tap()
             return
@@ -88,9 +107,8 @@ class Bot:
                 dis_h = p[0] + self.PIPE_WIDTH - bird_x
                 dis_v = p[1] - bird_y
                 break
-        dis_h /= 8
-        dis_v /= 8
-        print dis_v
+        dis_h /= 4
+        dis_v /= 4
         # update Q(s, a)
         self.Q.setdefault((dis_h, dis_v), {'tap': 0, 'do_nothing': 0})
         self.Q.setdefault(self.pre_s, {'tap': 0, 'do_nothing': 0})
@@ -120,6 +138,6 @@ class Bot:
 
 if __name__ == '__main__':
     bot = Bot()
-    pyglet.clock.schedule_interval(bot.run, 0.1)
+    pyglet.clock.schedule_interval(bot.run, 0.05)
     pyglet.app.run()
     
