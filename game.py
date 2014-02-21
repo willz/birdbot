@@ -141,12 +141,12 @@ class Game:
             [pipe.update(dt) for pipe in self.pipes]
             # move the land
             self.land.x = 0 if self.land.x else -10
+            self.__calc_score()
             if self.__is_collide():
                 if Game.sound:
                     resource.hit_sound.play()
                 self.state = 'FAILING'
                 self.record.save()
-            self.__calc_score()
         elif self.state == 'FAILING':
             # the bird is dead, but still need to play the animation
             # that the bird sliding to land
