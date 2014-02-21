@@ -2,6 +2,7 @@ import pyglet
 import random
 import pickle
 import atexit
+import os
 from pybird.game import Game
 
 class Bot:
@@ -14,8 +15,6 @@ class Bot:
         # every call of run()
         self.tapped = False
         
-        # pause planning until the game is finished completely
-        self.pause = False
         self.game.play()
 
         # variables for plan
@@ -26,14 +25,13 @@ class Bot:
 
         atexit.register(do_at_exit)
 
-
     # this method is auto called every 0.05s by the pyglet
-    def run(self, dt):
+    def run(self):
         if self.game.state == 'PLAY':
             self.tapped = False
             # call plan() to execute your plan
             self.plan(self.get_state())
-        elif not self.pause:
+        else:
             state = self.get_state()
             bird_state = list(state['bird'])
             bird_state[2] = 'dead'
@@ -41,13 +39,10 @@ class Bot:
             # do NOT allow tap
             self.tapped = True
             self.plan(state)
-            self.pause = True
-        if self.game.state == 'FAILED':
             # restart game
             print 'score:', self.game.record.get(), 'best: ', self.game.record.best_score
             self.game.restart()
             self.game.play()
-            self.pause = False
 
     # get the state that robot needed
     def get_state(self):
@@ -78,18 +73,18 @@ class Bot:
     # NOTE Put your code here
     def plan(self, state):
         pass
+        
 
 if __name__ == '__main__':
-    # some config
     show_window = True
     enable_sound = True
-
-    # do NOT edit the code below
     game = Game()
     game.set_sound(enable_sound)
-    pyglet.clock.schedule_interval(game.update, 0.05)
     bot = Bot(game)
-    pyglet.clock.schedule_interval(bot.run, 0.05)
+    def update(dt):
+        bot.run()
+        game.update(dt)
+    pyglet.clock.schedule_interval(update, Game.TIME_INTERVAL)
 
     if show_window:
         window = pyglet.window.Window(Game.WINDOW_WIDTH, Game.WINDOW_HEIGHT, vsync = False)
