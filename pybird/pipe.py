@@ -1,7 +1,7 @@
 import pyglet
 
 class Pipe(pyglet.sprite.Sprite):
-    SPEED = 100 
+    SPEED = 110 
     def __init__(self, *args, **kwargs):
         super(Pipe, self).__init__(*args, **kwargs)
         self.scored = False
