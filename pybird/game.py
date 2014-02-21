@@ -44,9 +44,9 @@ class Game:
         # create pipes
         self.pipes = []
         y = self.__gen_pipe_pos_y()
-        p = Pipe(resource.pipe_up, 500, y)
+        p = Pipe(resource.pipe_up, 350, y)
         self.pipes.append(p)
-        p = Pipe(resource.pipe_down, 500, y + Game.PIPE_HEIGHT_OFFSET)
+        p = Pipe(resource.pipe_down, 350, y + Game.PIPE_HEIGHT_OFFSET)
         self.pipes.append(p)
 
         self.state = 'INIT'
